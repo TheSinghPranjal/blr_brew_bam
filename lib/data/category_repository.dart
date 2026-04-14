@@ -61,4 +61,18 @@ class CategoryRepository {
       throw Exception('updateCategory failed ${response.statusCode}: ${response.body}');
     }
   }
+
+  // ── Delete a category ──────────────────────────────────────────────
+  Future<void> deleteCategory(String id) async {
+    final uri = Uri.parse('$_base/deleteCategory');
+    final response = await http.post(
+      uri,
+      headers: _headers,
+      body: jsonEncode({'category_id': id}),
+    );
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception('deleteCategory failed ${response.statusCode}: ${response.body}');
+    }
+  }
 }

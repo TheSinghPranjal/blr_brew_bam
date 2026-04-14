@@ -109,6 +109,18 @@ class ApiCategoriesNotifier extends AsyncNotifier<List<ApiCategory>> {
     );
   }
 
+  /// Optimistically remove from list, call API, then re-sync
+  Future<void> deleteCategory(String id) async {
+    // Optimistic removal
+    state = state.whenData(
+      (list) => list.where((c) => c.categoryId != id).toList(),
+    );
+    // API call — POST with category_id in body
+    await _repo.deleteCategory(id);
+    // Re-sync for server-authoritative state
+    ref.invalidateSelf();
+  }
+
   Future<void> refresh() async {
     ref.invalidateSelf();
     await future;
