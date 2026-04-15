@@ -4,22 +4,45 @@ import '../domain/category_model.dart';
 import 'category_repository.dart';
 import 'mock_data.dart';
 
-// ── Auth / Session ─────────────────────────────────────────────────────
-final currentUserProvider = StateProvider<RestaurantUser?>((ref) => null);
+// ══════════════════════════════════════════════════════════════════════
+//  Auth / Session
+//  Riverpod 3: StateProvider → NotifierProvider
+// ══════════════════════════════════════════════════════════════════════
+final currentUserProvider =
+    NotifierProvider<CurrentUserNotifier, RestaurantUser?>(
+  CurrentUserNotifier.new,
+);
 
-// ── Gateway selection ──────────────────────────────────────────────────
-final gatewaySelectionProvider = StateProvider<String?>((ref) => null);
+class CurrentUserNotifier extends Notifier<RestaurantUser?> {
+  @override
+  RestaurantUser? build() => null;
+}
 
-// ── Users (raw + mutable) ──────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════
+//  Gateway selection  ('Customer' | 'Restaurant')
+// ══════════════════════════════════════════════════════════════════════
+final gatewaySelectionProvider =
+    NotifierProvider<GatewayNotifier, String?>(GatewayNotifier.new);
+
+class GatewayNotifier extends Notifier<String?> {
+  @override
+  String? build() => null;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+//  Users
+// ══════════════════════════════════════════════════════════════════════
 final usersProvider = Provider<List<RestaurantUser>>((ref) => mockUsers);
 
 final mutableUsersProvider =
-    StateNotifierProvider<MutableUsersNotifier, List<RestaurantUser>>(
-  (ref) => MutableUsersNotifier(mockUsers),
+    NotifierProvider<MutableUsersNotifier, List<RestaurantUser>>(
+  MutableUsersNotifier.new,
 );
 
-class MutableUsersNotifier extends StateNotifier<List<RestaurantUser>> {
-  MutableUsersNotifier(List<RestaurantUser> initial) : super(initial);
+/// Riverpod 3: StateNotifier → Notifier (with build() returning initial state)
+class MutableUsersNotifier extends Notifier<List<RestaurantUser>> {
+  @override
+  List<RestaurantUser> build() => mockUsers;
 
   void reassignRole(String employeeId, UserRole newRole) {
     state = [
@@ -29,14 +52,17 @@ class MutableUsersNotifier extends StateNotifier<List<RestaurantUser>> {
   }
 }
 
-// ── Local Categories (used by product forms, synced from API) ──────────
+// ══════════════════════════════════════════════════════════════════════
+//  Local Categories  (used by product forms, seeded from API)
+// ══════════════════════════════════════════════════════════════════════
 final categoriesProvider =
-    StateNotifierProvider<CategoriesNotifier, List<Category>>(
-  (ref) => CategoriesNotifier(),
+    NotifierProvider<CategoriesNotifier, List<Category>>(
+  CategoriesNotifier.new,
 );
 
-class CategoriesNotifier extends StateNotifier<List<Category>> {
-  CategoriesNotifier() : super([]);
+class CategoriesNotifier extends Notifier<List<Category>> {
+  @override
+  List<Category> build() => [];
 
   void add(Category category) => state = [...state, category];
   void remove(String id) =>
@@ -49,26 +75,33 @@ class CategoriesNotifier extends StateNotifier<List<Category>> {
       state.where((c) => c.parentId == parentId).toList();
 }
 
-// ── Products ───────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════
+//  Products
+// ══════════════════════════════════════════════════════════════════════
 final productsProvider =
-    StateNotifierProvider<ProductsNotifier, List<Product>>(
-  (ref) => ProductsNotifier(),
-);
+    NotifierProvider<ProductsNotifier, List<Product>>(ProductsNotifier.new);
 
-class ProductsNotifier extends StateNotifier<List<Product>> {
-  ProductsNotifier() : super([]);
+class ProductsNotifier extends Notifier<List<Product>> {
+  @override
+  List<Product> build() => [];
 
   void add(Product product) => state = [...state, product];
   void remove(String id) =>
       state = state.where((p) => p.id != id).toList();
 }
 
-// ── Category Repository singleton ──────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════
+//  Category Repository  (singleton)
+// ══════════════════════════════════════════════════════════════════════
 final categoryRepositoryProvider = Provider<CategoryRepository>(
   (_) => CategoryRepository(),
 );
 
-// ── API Categories (AsyncNotifier) ────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════
+//  API Categories  (AsyncNotifier — unchanged in Riverpod 3)
+//  NOTE: AsyncValue no longer has .valueOrNull in Riverpod 3.
+//        Use .asData?.value instead.
+// ══════════════════════════════════════════════════════════════════════
 final apiCategoriesProvider =
     AsyncNotifierProvider<ApiCategoriesNotifier, List<ApiCategory>>(
   ApiCategoriesNotifier.new,
@@ -80,10 +113,12 @@ class ApiCategoriesNotifier extends AsyncNotifier<List<ApiCategory>> {
   @override
   Future<List<ApiCategory>> build() => _repo.fetchCategories();
 
-  /// Optimistically prepend, then re-sync from server
+  /// Optimistically prepend the new category, then re-sync from server
   Future<void> addCategory(Map<String, dynamic> body) async {
     final created = await _repo.addCategory(body);
-    state = AsyncData([created, ...state.valueOrNull ?? []]);
+    // Riverpod 3: use .asData?.value instead of .valueOrNull
+    final current = state.asData?.value ?? [];
+    state = AsyncData([created, ...current]);
     ref.invalidateSelf();
   }
 
@@ -109,15 +144,12 @@ class ApiCategoriesNotifier extends AsyncNotifier<List<ApiCategory>> {
     );
   }
 
-  /// Optimistically remove from list, call API, then re-sync
+  /// Optimistic removal, then re-sync
   Future<void> deleteCategory(String id) async {
-    // Optimistic removal
     state = state.whenData(
       (list) => list.where((c) => c.categoryId != id).toList(),
     );
-    // API call — POST with category_id in body
     await _repo.deleteCategory(id);
-    // Re-sync for server-authoritative state
     ref.invalidateSelf();
   }
 

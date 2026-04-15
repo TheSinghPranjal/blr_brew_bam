@@ -23,39 +23,27 @@ class RestaurantDashboard extends ConsumerWidget {
       context.go('/login');
     }
 
-    switch (user.role) {
-      case UserRole.superAdmin:
-        return const SuperAdminDashboard();
-      case UserRole.manager:
-        return const ManagerDashboard();
-      case UserRole.headChef:
-        return PlaceholderRoleScreen(
-            role: 'Head Chef Interface', onLogout: logout);
-      case UserRole.chef:
-        return PlaceholderRoleScreen(
-            role: 'Chef Interface', onLogout: logout);
-      case UserRole.kitchen:
-        return PlaceholderRoleScreen(
-            role: 'Kitchen Interface', onLogout: logout);
-      case UserRole.seniorWaiter:
-        return PlaceholderRoleScreen(
-            role: 'Senior Waiter Interface', onLogout: logout);
-      case UserRole.waiter:
-        return PlaceholderRoleScreen(
-            role: 'Waiter Interface', onLogout: logout);
-      case UserRole.serviceDesk:
-        return PlaceholderRoleScreen(
-            role: 'Service Desk Interface', onLogout: logout);
-      case UserRole.cleaning:
-        return PlaceholderRoleScreen(
-            role: 'Cleaning Interface', onLogout: logout);
-      case UserRole.inventory:
-        return PlaceholderRoleScreen(
-            role: 'Inventory Interface', onLogout: logout);
-      case UserRole.customer:
-        // customers shouldn't be here, redirect to customer app
-        return PlaceholderRoleScreen(
-            role: 'Customer', onLogout: logout);
-    }
+    return switch (user.role) {
+      UserRole.superAdmin => const SuperAdminDashboard(),
+      UserRole.manager    => const ManagerDashboard(),
+      UserRole.headChef   => PlaceholderRoleScreen(
+          role: 'Head Chef Interface', onLogout: logout),
+      UserRole.chef       => PlaceholderRoleScreen(
+          role: 'Chef Interface', onLogout: logout),
+      UserRole.kitchen    => PlaceholderRoleScreen(
+          role: 'Kitchen Interface', onLogout: logout),
+      UserRole.seniorWaiter => PlaceholderRoleScreen(
+          role: 'Senior Waiter Interface', onLogout: logout),
+      UserRole.waiter     => PlaceholderRoleScreen(
+          role: 'Waiter Interface', onLogout: logout),
+      UserRole.serviceDesk => PlaceholderRoleScreen(
+          role: 'Service Desk Interface', onLogout: logout),
+      UserRole.cleaning   => PlaceholderRoleScreen(
+          role: 'Cleaning Interface', onLogout: logout),
+      UserRole.inventory  => PlaceholderRoleScreen(
+          role: 'Inventory Interface', onLogout: logout),
+      UserRole.customer   => PlaceholderRoleScreen(
+          role: 'Customer', onLogout: logout),
+    };
   }
 }

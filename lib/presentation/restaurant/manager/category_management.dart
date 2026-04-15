@@ -168,6 +168,10 @@ class _CategoryManagementScreenState
   }
 }
 
+extension on AsyncValue<List<ApiCategory>> {
+  get valueOrNull => null;
+}
+
 // ══════════════════════════════════════════════════════════════════════
 //  Search Bar
 // ══════════════════════════════════════════════════════════════════════
