@@ -18,9 +18,12 @@ class RestaurantDashboard extends ConsumerWidget {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    void logout() {
+    void logout() async {
+      try {
+        await ref.read(amplifyAuthServiceProvider).signOut();
+      } catch (_) {}
       ref.read(currentUserProvider.notifier).state = null;
-      context.go('/login');
+      if (context.mounted) context.go('/login');
     }
 
     return switch (user.role) {

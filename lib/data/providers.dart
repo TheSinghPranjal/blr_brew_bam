@@ -1,8 +1,66 @@
+// Hide Amplify's 'Category' to avoid conflict with domain/models.dart Category
+import 'package:amplify_auth_cognito/amplify_auth_cognito.dart' hide Category;
+import 'package:amplify_flutter/amplify_flutter.dart' hide Category;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../domain/models.dart';
 import '../domain/category_model.dart';
 import 'category_repository.dart';
 import 'mock_data.dart';
+import '../core/auth_service.dart';
+import '../core/app_logger.dart';
+
+const _log = AppLogger('Providers');
+
+// ── Amplify auth service singleton ─────────────────────────────────────
+final amplifyAuthServiceProvider = Provider<AmplifyAuthService>(
+  (_) => AmplifyAuthService(),
+);
+
+// ── Auth Init: restores session on cold start ──────────────────────────
+// MyApp watches this FutureProvider — it shows a spinner until we know
+// whether the user is already signed in via Cognito.
+final authInitProvider = FutureProvider<void>((ref) async {
+  _log.info('Checking for existing Cognito session…');
+  final service = ref.read(amplifyAuthServiceProvider);
+
+  final cognitoUser = await service.getCurrentUser();
+  if (cognitoUser == null) {
+    _log.info('No active session — user needs to sign in');
+    return;
+  }
+
+  // Decode ID token: email, display name, AND cognito:groups (role)
+  final claims = await service.fetchTokenClaims();
+  _log.info('Session restored — claims: $claims');
+
+  final email = claims.email ?? '';
+  final name  = claims.displayName;
+  final role  = claims.highestPriorityRole;
+  _log.info('Restored role from JWT groups: ${role.name}');
+
+  // Enrich with mock data for known employees (remove when real API exists)
+  final knownEmployee = mockUsers.where(
+    (u) => u.email.toLowerCase() == email.toLowerCase(),
+  ).firstOrNull;
+
+  final resolved = RestaurantUser(
+    employeeId: cognitoUser.userId,
+    name:       knownEmployee?.name ?? name,
+    username:   email.split('@').first,
+    mobileNumber: knownEmployee?.mobileNumber ?? '',
+    email:      email,
+    designation: role.displayName,
+    role:       role,          // ← authoritative from Cognito group
+    photoUrl:   claims.picture ?? knownEmployee?.photoUrl ?? '',
+    age:        knownEmployee?.age ?? 0,
+    languagesSpoken: knownEmployee?.languagesSpoken ?? [],
+    metadata:   {'cognito_groups': claims.groups.join(','), 'restored': 'true'},
+  );
+
+  _log.info('Session resolved → ${resolved.name} | ${resolved.role.name}');
+  ref.read(currentUserProvider.notifier).state = resolved;
+});
+
 
 // ══════════════════════════════════════════════════════════════════════
 //  Auth / Session

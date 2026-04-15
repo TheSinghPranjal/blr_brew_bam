@@ -51,14 +51,19 @@ class GatewayPage extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    TextButton.icon(
-                      onPressed: () {
-                        ref.read(currentUserProvider.notifier).state = null;
-                        context.go('/login');
-                      },
-                      icon: const Icon(Icons.logout_rounded, size: 18),
-                      label: const Text('Logout'),
-                    ),
+                     TextButton.icon(
+                       onPressed: () async {
+                         try {
+                           await ref
+                               .read(amplifyAuthServiceProvider)
+                               .signOut();
+                         } catch (_) {}
+                         ref.read(currentUserProvider.notifier).state = null;
+                         if (context.mounted) context.go('/login');
+                       },
+                       icon: const Icon(Icons.logout_rounded, size: 18),
+                       label: const Text('Logout'),
+                     ),
                   ],
                 ),
                 const SizedBox(height: 48),

@@ -446,7 +446,7 @@ class _ProductBody extends StatelessWidget {
       subcategory: 'Dates',
       chef: 'Priya Nair',
       ingredients: 'Kimia Dates (100%)',
-      image: 'https://images.unsplash.com/photo-1596482161271-2ed2dc858739?w=400&q=70',
+      image: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=400&q=70',
     ),
     MockProduct(
       productId: 'PRD002',
@@ -462,7 +462,7 @@ class _ProductBody extends StatelessWidget {
       subcategory: 'Alliums',
       chef: 'Marco Rossi',
       ingredients: 'Peeled Garlic (100%)',
-      image: 'https://images.unsplash.com/photo-1540148426945-816742512f43?w=400&q=70',
+      image: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=400&q=70',
     ),
     MockProduct(
       productId: 'PRD003',
@@ -494,7 +494,7 @@ class _ProductBody extends StatelessWidget {
       subcategory: 'Exotic Fruits',
       chef: 'Marco Rossi',
       ingredients: 'Green Kiwi (100%)',
-      image: 'https://images.unsplash.com/photo-1585062544865-c4224734da65?w=400&q=70',
+      image: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=400&q=70',
     ),
     MockProduct(
       productId: 'PRD005',
