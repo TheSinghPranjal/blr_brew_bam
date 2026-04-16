@@ -105,6 +105,18 @@ class GatewayPage extends ConsumerWidget {
                   ),
                   onTap: () => context.go('/restaurant'),
                 ),
+                const SizedBox(height: 16),
+
+                // ── Field Agent Card ──────────────────────────────────
+                _GatewayCard(
+                  title: 'Field Agent',
+                  subtitle: 'Onboard & manage restaurant partners',
+                  icon: Icons.badge_outlined,
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF7C3AED), Color(0xFF6D28D9)],
+                  ),
+                  onTap: () => context.go('/field-agent'),
+                ),
               ],
             ),
           ),

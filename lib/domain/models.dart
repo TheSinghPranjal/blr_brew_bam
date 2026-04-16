@@ -14,6 +14,7 @@ enum UserRole {
   cleaning,
   inventory,
   customer,
+  fieldAgent,
 }
 
 extension UserRoleX on UserRole {
@@ -27,6 +28,8 @@ extension UserRoleX on UserRole {
         return 'Senior Waiter';
       case UserRole.serviceDesk:
         return 'Service Desk';
+      case UserRole.fieldAgent:
+        return 'Field Agent';
       default:
         final s = toString().split('.').last;
         return s[0].toUpperCase() + s.substring(1);
@@ -39,6 +42,9 @@ extension UserRoleX on UserRole {
   /// Whether this role can access Manager UI
   bool get isManagerOrAbove =>
       this == UserRole.superAdmin || this == UserRole.manager;
+
+  /// Whether this role can access Field Agent UI
+  bool get isFieldAgent => this == UserRole.fieldAgent;
 }
 
 // -------------------------------------------------------
