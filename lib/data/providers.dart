@@ -74,6 +74,8 @@ final currentUserProvider =
 class CurrentUserNotifier extends Notifier<RestaurantUser?> {
   @override
   RestaurantUser? build() => null;
+
+  void logout() => state = null;
 }
 
 // ══════════════════════════════════════════════════════════════════════

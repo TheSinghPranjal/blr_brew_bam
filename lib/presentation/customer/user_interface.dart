@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme.dart';
 import '../../data/providers.dart';
 import '../../domain/models.dart';
+import 'customer_profile_screen.dart';
 
 class UserInterface extends ConsumerStatefulWidget {
   const UserInterface({super.key});
@@ -66,7 +66,7 @@ class _UserInterfaceState extends ConsumerState<UserInterface> {
         bottom: false,
         child: Column(
           children: [
-            _Header(user: user, onLogout: _logout),
+            _Header(user: user, onProfileTap: _openProfile),
             const SizedBox(height: 8),
             _MainTabBar(
               tabs: mainTabs,
@@ -110,17 +110,16 @@ class _UserInterfaceState extends ConsumerState<UserInterface> {
     );
   }
 
-  void _logout() {
-    ref.read(currentUserProvider.notifier).state = null;
-    context.go('/login');
+  void _openProfile() {
+    Navigator.of(context).push(customerProfileRoute());
   }
 }
 
 // ── Header ─────────────────────────────────────────────────────────────
 class _Header extends StatelessWidget {
   final RestaurantUser user;
-  final VoidCallback onLogout;
-  const _Header({required this.user, required this.onLogout});
+  final VoidCallback onProfileTap;
+  const _Header({required this.user, required this.onProfileTap});
 
   @override
   Widget build(BuildContext context) {
@@ -156,12 +155,29 @@ class _Header extends StatelessWidget {
               ],
             ),
           ),
+          // ── Profile Icon ──────────────────────────────────────
           GestureDetector(
-            onTap: onLogout,
-            child: CircleAvatar(
-              radius: 20,
-              backgroundColor: AppColors.gradientStart,
-              backgroundImage: NetworkImage(user.photoUrl),
+            onTap: onProfileTap,
+            child: Hero(
+              tag: 'profile_avatar',
+              child: CircleAvatar(
+                radius: 22,
+                backgroundColor: AppColors.gradientStart,
+                backgroundImage:
+                    user.photoUrl.isNotEmpty ? NetworkImage(user.photoUrl) : null,
+                child: user.photoUrl.isEmpty
+                    ? Text(
+                        user.name.isNotEmpty
+                            ? user.name[0].toUpperCase()
+                            : '?',
+                        style: GoogleFonts.outfit(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.primary,
+                        ),
+                      )
+                    : null,
+              ),
             ),
           ),
         ],
