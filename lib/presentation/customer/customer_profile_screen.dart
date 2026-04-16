@@ -49,7 +49,10 @@ class CustomerProfileScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
                 _QuickActionsGrid(),
                 const SizedBox(height: 12),
-                _MenuSection(onLogout: handleLogout),
+                _MenuSection(
+                  onLogout: handleLogout,
+                  onSwitchToRestaurant: () => context.go('/restaurant'),
+                ),
                 const SizedBox(height: 40),
               ],
             ),
@@ -225,9 +228,13 @@ class _QuickActionTile extends StatelessWidget {
 // ── Menu Section ──────────────────────────────────────────────────────────
 class _MenuSection extends StatelessWidget {
   final VoidCallback onLogout;
-  const _MenuSection({required this.onLogout});
+  final VoidCallback onSwitchToRestaurant;
+  const _MenuSection({
+    required this.onLogout,
+    required this.onSwitchToRestaurant,
+  });
 
-  static const _menuItems = [
+  static const _regularItems = [
     _MenuItem(icon: Icons.card_membership_outlined, label: 'Membership & Benefits'),
     _MenuItem(icon: Icons.confirmation_num_outlined, label: 'My Vouchers'),
     _MenuItem(icon: Icons.receipt_long_outlined, label: 'Order History'),
@@ -249,25 +256,95 @@ class _MenuSection extends StatelessWidget {
       ),
       child: Column(
         children: [
-          ..._menuItems.asMap().entries.map((entry) {
-            final i = entry.key;
-            final item = entry.value;
-            return Column(
-              children: [
-                _MenuTile(item: item),
-                if (i < _menuItems.length - 1)
+          // Regular menu items
+          ..._regularItems.map((item) => Column(
+                children: [
+                  _MenuTile(item: item),
                   const Divider(height: 1, indent: 52),
-              ],
-            );
-          }),
+                ],
+              )),
+
+          // ── Switch to Restaurant ──────────────────────────────────
+          _SwitchToRestaurantTile(onTap: onSwitchToRestaurant),
           const Divider(height: 1),
-          // Logout at the bottom
+
+          // ── Log Out ───────────────────────────────────────────────
           _MenuTile(
             item: const _MenuItem(
-                icon: Icons.logout_rounded, label: 'Log Out', isDestructive: true),
+                icon: Icons.logout_rounded,
+                label: 'Log Out',
+                isDestructive: true),
             onTap: onLogout,
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Switch to Restaurant Tile ─────────────────────────────────────────────
+class _SwitchToRestaurantTile extends StatelessWidget {
+  final VoidCallback onTap;
+  const _SwitchToRestaurantTile({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            // Gradient icon badge
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppColors.primary, AppColors.primaryDark],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                Icons.storefront_outlined,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Switch to Restaurant',
+                    style: GoogleFonts.outfit(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF1A1A1A),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Manage operations, staff & catalogue',
+                    style: GoogleFonts.outfit(
+                      fontSize: 11,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: Color(0xFFAAAAAA),
+              size: 20,
+            ),
+          ],
+        ),
       ),
     );
   }
