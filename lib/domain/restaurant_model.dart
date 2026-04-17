@@ -33,16 +33,16 @@ extension RestaurantTypeX on RestaurantType {
 }
 
 class Restaurant {
-  final String restaurantId;   // UUID
+  final String restaurantId;
   final String name;
   final RestaurantType type;
   final String city;
   final String area;
   final String address;
-  final String createdBy;      // employeeId of the field agent
+  final String createdBy;
   final DateTime createdAt;
   final bool isActive;
-  final List<String> superAdminEmails; // 1–3 emails
+  final List<String> superAdminEmails;
 
   const Restaurant({
     required this.restaurantId,
@@ -56,6 +56,27 @@ class Restaurant {
     this.isActive = true,
     required this.superAdminEmails,
   });
+
+  /// Parses the fetchRestaurants GET response.
+  /// Handles both "super_admins" (GET) and "super_admin_emails" (POST) keys.
+  /// Type matching is case-insensitive: "Cafe" == "cafe".
+  factory Restaurant.fromJson(Map<String, dynamic> json) {
+    final rawEmails = json['super_admins'] ?? json['super_admin_emails'] ?? [];
+    return Restaurant(
+      restaurantId: json['restaurant_id'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      type: _typeFromString(json['type'] as String? ?? ''),
+      city: json['city'] as String? ?? '',
+      area: json['area'] as String? ?? '',
+      address: json['address'] as String? ?? '',
+      createdBy: json['created_by'] as String? ?? '',
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'] as String) ?? DateTime.now()
+          : DateTime.now(),
+      isActive: json['is_active'] as bool? ?? true,
+      superAdminEmails: List<String>.from(rawEmails as List),
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         'restaurant_id': restaurantId,
@@ -72,4 +93,19 @@ class Restaurant {
 
   @override
   String toString() => 'Restaurant(id: $restaurantId, name: $name)';
+}
+
+/// Maps any casing of the type string to [RestaurantType].
+RestaurantType _typeFromString(String raw) {
+  switch (raw.toLowerCase().replaceAll(' ', '').replaceAll('_', '').replaceAll('-', '')) {
+    case 'finedining':
+      return RestaurantType.fineDining;
+    case 'bar':
+      return RestaurantType.bar;
+    case 'cloudkitchen':
+      return RestaurantType.cloudKitchen;
+    case 'cafe':
+    default:
+      return RestaurantType.cafe;
+  }
 }

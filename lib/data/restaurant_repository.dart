@@ -5,6 +5,7 @@
 import 'dart:convert';
 import 'dart:developer' as dev;
 import 'package:http/http.dart' as http;
+import '../domain/restaurant_model.dart';
 
 class RestaurantApiException implements Exception {
   final int? statusCode;
@@ -16,25 +17,54 @@ class RestaurantApiException implements Exception {
 }
 
 class RestaurantRepository {
-  static const _endpoint =
-      'https://5nysoztmt8.execute-api.us-west-1.amazonaws.com/default/addNewRastaurant';
+  static const _baseUrl =
+      'https://5nysoztmt8.execute-api.us-west-1.amazonaws.com/default';
 
-  static const _headers = {
-    'Content-Type': 'application/json',
-  };
+  static const _headers = {'Content-Type': 'application/json'};
 
-  /// POSTs a new restaurant to the API.
-  /// Returns the raw response body as a [Map] on success.
-  /// Throws [RestaurantApiException] on failure.
+  // ── Fetch all restaurants ─────────────────────────────────────────────
+  Future<List<Restaurant>> fetchRestaurants() async {
+    final url = '$_baseUrl/fetchRestaurants';
+    dev.log('GET $url', name: 'RestaurantRepository');
+
+    final response = await http
+        .get(Uri.parse(url), headers: _headers)
+        .timeout(
+          const Duration(seconds: 30),
+          onTimeout: () => throw const RestaurantApiException(
+            message: 'Request timed out. Please check your connection.',
+          ),
+        );
+
+    dev.log(
+      'Response ${response.statusCode} — ${response.body.length} bytes',
+      name: 'RestaurantRepository',
+    );
+
+    if (response.statusCode == 200) {
+      final list = jsonDecode(response.body) as List<dynamic>;
+      return list
+          .map((e) => Restaurant.fromJson(e as Map<String, dynamic>))
+          .toList();
+    }
+
+    throw RestaurantApiException(
+      statusCode: response.statusCode,
+      message: _extractError(response.body, response.statusCode),
+    );
+  }
+
+  // ── Add a new restaurant ──────────────────────────────────────────────
   Future<Map<String, dynamic>> addRestaurant({
     required String name,
-    required String type,       // RestaurantType.name  e.g. "cafe"
+    required String type,
     required String city,
     required String area,
     required String address,
     required String createdBy,
     required List<String> superAdminEmails,
   }) async {
+    final url = '$_baseUrl/addNewRastaurant';
     final payload = {
       'name': name,
       'type': type,
@@ -46,20 +76,12 @@ class RestaurantRepository {
     };
 
     dev.log(
-      '══════════════════════════════════════════════════\n'
-      '  [RestaurantRepository] POST addNewRastaurant\n'
-      '  URL   : $_endpoint\n'
-      '  Body  : ${jsonEncode(payload)}\n'
-      '══════════════════════════════════════════════════',
+      'POST $url\nBody: ${jsonEncode(payload)}',
       name: 'RestaurantRepository',
     );
 
     final response = await http
-        .post(
-          Uri.parse(_endpoint),
-          headers: _headers,
-          body: jsonEncode(payload),
-        )
+        .post(Uri.parse(url), headers: _headers, body: jsonEncode(payload))
         .timeout(
           const Duration(seconds: 30),
           onTimeout: () => throw const RestaurantApiException(
@@ -68,8 +90,7 @@ class RestaurantRepository {
         );
 
     dev.log(
-      '  [RestaurantRepository] Response ${response.statusCode}\n'
-      '  Body: ${response.body}',
+      'Response ${response.statusCode} — ${response.body}',
       name: 'RestaurantRepository',
     );
 
@@ -79,20 +100,22 @@ class RestaurantRepository {
       return jsonDecode(body) as Map<String, dynamic>;
     }
 
-    // Try to extract a server error message
-    String serverMessage = 'Unexpected error (${response.statusCode})';
-    try {
-      final decoded = jsonDecode(response.body) as Map<String, dynamic>;
-      serverMessage = decoded['message']?.toString() ??
-          decoded['error']?.toString() ??
-          serverMessage;
-    } catch (_) {
-      if (response.body.isNotEmpty) serverMessage = response.body;
-    }
-
     throw RestaurantApiException(
       statusCode: response.statusCode,
-      message: serverMessage,
+      message: _extractError(response.body, response.statusCode),
     );
   }
+
+  // ── Shared error extractor ────────────────────────────────────────────
+  String _extractError(String body, int statusCode) {
+    try {
+      final decoded = jsonDecode(body) as Map<String, dynamic>;
+      return decoded['message']?.toString() ??
+          decoded['error']?.toString() ??
+          'Unexpected error ($statusCode)';
+    } catch (_) {
+      return body.isNotEmpty ? body : 'Unexpected error ($statusCode)';
+    }
+  }
 }
+

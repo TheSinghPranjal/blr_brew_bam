@@ -14,29 +14,49 @@ final restaurantRepositoryProvider = Provider<RestaurantRepository>(
   (_) => RestaurantRepository(),
 );
 
-// ── State for the Add Restaurant form ────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════
+//  Fetch Restaurants  (AsyncNotifier — loads on open, refreshes after add)
+// ══════════════════════════════════════════════════════════════════════════
+class FetchRestaurantsNotifier extends AsyncNotifier<List<Restaurant>> {
+  @override
+  Future<List<Restaurant>> build() => _load();
+
+  Future<List<Restaurant>> _load() =>
+      ref.read(restaurantRepositoryProvider).fetchRestaurants();
+
+  /// Force a fresh fetch from the server.
+  Future<void> refresh() async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(_load);
+  }
+}
+
+final fetchRestaurantsProvider =
+    AsyncNotifierProvider<FetchRestaurantsNotifier, List<Restaurant>>(
+  FetchRestaurantsNotifier.new,
+);
+
+// ══════════════════════════════════════════════════════════════════════════
+//  Add Restaurant State
+// ══════════════════════════════════════════════════════════════════════════
 enum AddRestaurantStatus { idle, loading, success, error }
 
 class AddRestaurantState {
   final AddRestaurantStatus status;
   final String? errorMessage;
-  final List<Restaurant> restaurants;
 
   const AddRestaurantState({
     this.status = AddRestaurantStatus.idle,
     this.errorMessage,
-    this.restaurants = const [],
   });
 
   AddRestaurantState copyWith({
     AddRestaurantStatus? status,
     String? errorMessage,
-    List<Restaurant>? restaurants,
   }) =>
       AddRestaurantState(
         status: status ?? this.status,
         errorMessage: errorMessage ?? this.errorMessage,
-        restaurants: restaurants ?? this.restaurants,
       );
 }
 
@@ -60,7 +80,6 @@ class FieldAgentNotifier extends Notifier<AddRestaurantState> {
 
     state = state.copyWith(status: AddRestaurantStatus.loading);
 
-    // Build local model for in-app list (UUID generated client-side)
     final restaurant = Restaurant(
       restaurantId: _uuid.v4(),
       name: name.trim(),
@@ -77,10 +96,9 @@ class FieldAgentNotifier extends Notifier<AddRestaurantState> {
     );
 
     try {
-      // ── Real API call ──────────────────────────────────────────────
       await repo.addRestaurant(
         name: restaurant.name,
-        type: restaurant.type.name,          // "cafe" | "fineDining" | …
+        type: restaurant.type.name,
         city: restaurant.city,
         area: restaurant.area,
         address: restaurant.address,
@@ -89,42 +107,32 @@ class FieldAgentNotifier extends Notifier<AddRestaurantState> {
       );
 
       dev.log(
-        '✅ Restaurant "${restaurant.name}" onboarded successfully '
-        '(id: ${restaurant.restaurantId})',
+        '✅ Restaurant "${restaurant.name}" onboarded (id: ${restaurant.restaurantId})',
         name: 'FieldAgent',
       );
 
-      state = state.copyWith(
-        status: AddRestaurantStatus.success,
-        restaurants: [...state.restaurants, restaurant],
-      );
+      // ── Re-fetch the list so the dashboard shows the latest data ──
+      ref.invalidate(fetchRestaurantsProvider);
+
+      state = state.copyWith(status: AddRestaurantStatus.success);
     } on RestaurantApiException catch (e) {
-      dev.log(
-        '❌ API error: ${e.message} (status: ${e.statusCode})',
-        name: 'FieldAgent',
-      );
+      dev.log('❌ API error: ${e.message}', name: 'FieldAgent');
       state = state.copyWith(
-        status: AddRestaurantStatus.error,
-        errorMessage: e.message,
-      );
+          status: AddRestaurantStatus.error, errorMessage: e.message);
     } catch (e) {
-      dev.log(
-        '❌ Unexpected error: $e',
-        name: 'FieldAgent',
-      );
+      dev.log('❌ Unexpected: $e', name: 'FieldAgent');
       state = state.copyWith(
-        status: AddRestaurantStatus.error,
-        errorMessage: 'Something went wrong. Please try again.',
-      );
+          status: AddRestaurantStatus.error,
+          errorMessage: 'Something went wrong. Please try again.');
     }
   }
 
-  void resetStatus() {
-    state = state.copyWith(status: AddRestaurantStatus.idle, errorMessage: null);
-  }
+  void resetStatus() =>
+      state = state.copyWith(status: AddRestaurantStatus.idle, errorMessage: null);
 }
 
 final fieldAgentProvider =
     NotifierProvider<FieldAgentNotifier, AddRestaurantState>(
   FieldAgentNotifier.new,
 );
+
