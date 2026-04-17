@@ -1,6 +1,3 @@
-// Hide Amplify's 'Category' to avoid conflict with domain/models.dart Category
-import 'package:amplify_auth_cognito/amplify_auth_cognito.dart' hide Category;
-import 'package:amplify_flutter/amplify_flutter.dart' hide Category;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../domain/models.dart';
 import '../domain/category_model.dart';

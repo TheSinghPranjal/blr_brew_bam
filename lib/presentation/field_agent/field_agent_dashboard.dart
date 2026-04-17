@@ -145,13 +145,9 @@ class FieldAgentDashboard extends ConsumerWidget {
       ),
 
       // ── FAB ────────────────────────────────────────────────────────
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: () => context.push('/field-agent/add-restaurant'),
-        icon: const Icon(Icons.add_business_rounded),
-        label: Text(
-          'Add Restaurant',
-          style: GoogleFonts.outfit(fontWeight: FontWeight.w600),
-        ),
+        child: const Icon(Icons.add_business_rounded),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
       ),

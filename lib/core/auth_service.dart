@@ -51,6 +51,7 @@ class AuthTokenClaims {
     'service_desk':  UserRole.serviceDesk,
     'cleaning':      UserRole.cleaning,
     'inventory':     UserRole.inventory,
+    'field_agent':   UserRole.fieldAgent,
     'customer':      UserRole.customer,
   };
 
@@ -64,16 +65,47 @@ class AuthTokenClaims {
     UserRole.seniorWaiter,
     UserRole.waiter,
     UserRole.serviceDesk,
+    UserRole.fieldAgent,
     UserRole.cleaning,
     UserRole.inventory,
     UserRole.customer,
   ];
 
+  /// Converts snake_case group name to camelCase enum name.
+  /// Example: 'field_agent' → 'fieldAgent'
+  static String _toCamelCase(String snakeCase) {
+    return snakeCase.split('_').asMap().entries.fold<String>('', (acc, e) {
+      if (e.key == 0) return e.value;
+      return acc + (e.value.isEmpty ? '' : e.value[0].toUpperCase() + e.value.substring(1));
+    });
+  }
+
+  /// Tries to find a matching UserRole for the given group name.
+  /// First checks the explicit [_groupRoleMap], then tries to match by name conversion.
+  static UserRole? _mapGroupToRole(String groupName) {
+    // Try explicit mapping first
+    if (_groupRoleMap.containsKey(groupName)) {
+      return _groupRoleMap[groupName];
+    }
+
+    // Try to find a UserRole by matching the camelCase name
+    try {
+      final camelCaseName = _toCamelCase(groupName);
+      for (final role in UserRole.values) {
+        if (role.name == camelCaseName) return role;
+      }
+    } catch (_) {
+      // Ignore conversion errors
+    }
+
+    return null;
+  }
+
   /// Returns the highest-privilege role from the user's Cognito groups.
   /// Falls back to [UserRole.customer] if no matching group is found.
   UserRole get highestPriorityRole {
     final userRoles = groups
-        .map((g) => _groupRoleMap[g])
+        .map((g) => _mapGroupToRole(g))
         .whereType<UserRole>()
         .toSet();
 
