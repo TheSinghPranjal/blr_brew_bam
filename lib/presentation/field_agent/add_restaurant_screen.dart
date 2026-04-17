@@ -99,8 +99,9 @@ class _AddRestaurantScreenState extends ConsumerState<AddRestaurantScreen> {
 
     if (!mounted) return;
 
-    final status = ref.read(fieldAgentProvider).status;
-    if (status == AddRestaurantStatus.success) {
+    final agentState = ref.read(fieldAgentProvider);
+
+    if (agentState.status == AddRestaurantStatus.success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           behavior: SnackBarBehavior.floating,
@@ -126,6 +127,32 @@ class _AddRestaurantScreenState extends ConsumerState<AddRestaurantScreen> {
         ),
       );
       Navigator.of(context).pop();
+      ref.read(fieldAgentProvider.notifier).resetStatus();
+    } else if (agentState.status == AddRestaurantStatus.error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(16),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          backgroundColor: AppColors.error,
+          content: Row(
+            children: [
+              const Icon(Icons.error_outline_rounded,
+                  color: Colors.white, size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  agentState.errorMessage ?? 'Failed to add restaurant.',
+                  style: GoogleFonts.outfit(
+                      color: Colors.white, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+          duration: const Duration(seconds: 4),
+        ),
+      );
       ref.read(fieldAgentProvider.notifier).resetStatus();
     }
   }

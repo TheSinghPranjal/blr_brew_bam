@@ -7,6 +7,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../domain/restaurant_model.dart';
 import '../data/providers.dart';
+import '../data/restaurant_repository.dart';
+
+// ── Repository provider ───────────────────────────────────────────────────
+final restaurantRepositoryProvider = Provider<RestaurantRepository>(
+  (_) => RestaurantRepository(),
+);
 
 // ── State for the Add Restaurant form ────────────────────────────────────
 enum AddRestaurantStatus { idle, loading, success, error }
@@ -50,11 +56,11 @@ class FieldAgentNotifier extends Notifier<AddRestaurantState> {
     required List<String> superAdminEmails,
   }) async {
     final currentUser = ref.read(currentUserProvider);
+    final repo = ref.read(restaurantRepositoryProvider);
+
     state = state.copyWith(status: AddRestaurantStatus.loading);
 
-    // Simulate network delay
-    await Future<void>.delayed(const Duration(milliseconds: 1200));
-
+    // Build local model for in-app list (UUID generated client-side)
     final restaurant = Restaurant(
       restaurantId: _uuid.v4(),
       name: name.trim(),
@@ -70,20 +76,47 @@ class FieldAgentNotifier extends Notifier<AddRestaurantState> {
           .toList(),
     );
 
-    // Simulate API call — print full payload
-    dev.log(
-      '═══════════════════════════════════════\n'
-      '  [Field Agent] Restaurant Payload\n'
-      '═══════════════════════════════════════\n'
-      '${restaurant.toJson()}\n'
-      '═══════════════════════════════════════',
-      name: 'FieldAgent.addRestaurant',
-    );
+    try {
+      // ── Real API call ──────────────────────────────────────────────
+      await repo.addRestaurant(
+        name: restaurant.name,
+        type: restaurant.type.name,          // "cafe" | "fineDining" | …
+        city: restaurant.city,
+        area: restaurant.area,
+        address: restaurant.address,
+        createdBy: restaurant.createdBy,
+        superAdminEmails: restaurant.superAdminEmails,
+      );
 
-    state = state.copyWith(
-      status: AddRestaurantStatus.success,
-      restaurants: [...state.restaurants, restaurant],
-    );
+      dev.log(
+        '✅ Restaurant "${restaurant.name}" onboarded successfully '
+        '(id: ${restaurant.restaurantId})',
+        name: 'FieldAgent',
+      );
+
+      state = state.copyWith(
+        status: AddRestaurantStatus.success,
+        restaurants: [...state.restaurants, restaurant],
+      );
+    } on RestaurantApiException catch (e) {
+      dev.log(
+        '❌ API error: ${e.message} (status: ${e.statusCode})',
+        name: 'FieldAgent',
+      );
+      state = state.copyWith(
+        status: AddRestaurantStatus.error,
+        errorMessage: e.message,
+      );
+    } catch (e) {
+      dev.log(
+        '❌ Unexpected error: $e',
+        name: 'FieldAgent',
+      );
+      state = state.copyWith(
+        status: AddRestaurantStatus.error,
+        errorMessage: 'Something went wrong. Please try again.',
+      );
+    }
   }
 
   void resetStatus() {
