@@ -17,6 +17,7 @@ final List<RestaurantUser> mockUsers = [
     age: 38,
     languagesSpoken: ['English', 'Kannada', 'Hindi'],
     metadata: {},
+    
   ),
 
   // ── MANAGER ────────────────────────────────────────────
