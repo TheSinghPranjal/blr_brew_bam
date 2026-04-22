@@ -225,6 +225,7 @@ class _QuickActionTile extends StatelessWidget {
   }
 }
 
+
 // ── Menu Section ──────────────────────────────────────────────────────────
 class _MenuSection extends StatelessWidget {
   final VoidCallback onLogout;
