@@ -190,7 +190,7 @@ class _AddRestaurantScreenState extends ConsumerState<AddRestaurantScreen> {
       backgroundColor: AppColors.surface,
       appBar: AppBar(
         title: Text(
-          'Add Restaurants',
+          'Add Restaurant',
           style: GoogleFonts.outfit(
               fontWeight: FontWeight.w700, color: AppColors.textPrimary),
         ),
