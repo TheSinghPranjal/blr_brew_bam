@@ -271,21 +271,18 @@ class _TeamTab extends ConsumerWidget {
                     ref.read(teamMemberProvider.notifier).remove(members[i].id),
               ),
             ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: categories.isEmpty
             ? null
             : () => _showAddMemberSheet(context, ref, categories),
         backgroundColor:
-            categories.isEmpty ? AppColors.border : AppColors.primary,
+        categories.isEmpty ? AppColors.border : AppColors.primary,
         foregroundColor: Colors.white,
-        icon: const Icon(Icons.person_add_alt_1_rounded),
-        label: Text(
-          'Add Member',
-          style: GoogleFonts.outfit(fontWeight: FontWeight.w600),
-        ),
+        child: const Icon(Icons.person_add_alt_1_rounded),
       ),
     );
   }
+
 
   void _showAddMemberSheet(
     BuildContext context,
