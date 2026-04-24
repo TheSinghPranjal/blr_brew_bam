@@ -282,7 +282,6 @@ class _TeamTab extends ConsumerWidget {
       ),
     );
   }
-  
 
   void _showAddMemberSheet(
     BuildContext context,
