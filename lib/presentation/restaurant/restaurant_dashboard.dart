@@ -47,6 +47,8 @@ class RestaurantDashboard extends ConsumerWidget {
           role: 'Inventory Interface', onLogout: logout),
       UserRole.customer   => PlaceholderRoleScreen(
           role: 'Customer', onLogout: logout),
+      // TODO: Handle this case.
+      UserRole.fieldAgent => throw UnimplementedError(),
     };
   }
 }
