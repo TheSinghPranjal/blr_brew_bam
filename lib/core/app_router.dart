@@ -25,7 +25,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       return null;
     },
 
-
     routes: [
       GoRoute(
         path: '/login',
