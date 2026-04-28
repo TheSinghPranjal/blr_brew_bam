@@ -57,7 +57,7 @@ class MyApp extends ConsumerWidget {
       data: (_) => _buildRouter(ref),
     );
   }
-  
+
   Widget _buildRouter(WidgetRef ref) {
     final router = ref.watch(goRouterProvider);
     return MaterialApp.router(
