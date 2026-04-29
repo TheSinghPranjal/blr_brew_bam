@@ -24,6 +24,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       if (user != null && isOnLogin) return '/gateway';
       return null;
     },
+    
 
     routes: [
       GoRoute(
