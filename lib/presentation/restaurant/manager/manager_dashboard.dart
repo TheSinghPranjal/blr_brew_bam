@@ -19,7 +19,6 @@ class ManagerDashboard extends ConsumerWidget {
       return const UnauthorizedScreen();
     }
 
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Manager Dashboard'),
