@@ -87,7 +87,6 @@ class AppTheme {
           textStyle: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16),
         ),
       ),
-
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.primary,
