@@ -51,7 +51,10 @@ class CustomerProfileScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
                 _MenuSection(
                   onLogout: handleLogout,
-                  onSwitchToRestaurant: () => context.go('/restaurant'),
+                  onSwitchToBusiness: () => context.go(
+                    user.role.isFieldAgent ? '/field-agent' : '/restaurant',
+                  ),
+                  isFieldAgent: user.role.isFieldAgent,
                 ),
                 const SizedBox(height: 40),
               ],
@@ -228,10 +231,12 @@ class _QuickActionTile extends StatelessWidget {
 // ── Menu Section ──────────────────────────────────────────────────────────
 class _MenuSection extends StatelessWidget {
   final VoidCallback onLogout;
-  final VoidCallback onSwitchToRestaurant;
+  final VoidCallback onSwitchToBusiness;
+  final bool isFieldAgent;
   const _MenuSection({
     required this.onLogout,
-    required this.onSwitchToRestaurant,
+    required this.onSwitchToBusiness,
+    required this.isFieldAgent,
   });
 
   static const _regularItems = [
@@ -265,7 +270,7 @@ class _MenuSection extends StatelessWidget {
               )),
 
           // ── Switch to Restaurant ──────────────────────────────────
-          _SwitchToRestaurantTile(onTap: onSwitchToRestaurant),
+          _SwitchToBusinessTile(onTap: onSwitchToBusiness, isFieldAgent: isFieldAgent),
           const Divider(height: 1),
 
           // ── Log Out ───────────────────────────────────────────────
@@ -282,13 +287,23 @@ class _MenuSection extends StatelessWidget {
   }
 }
 
-// ── Switch to Restaurant Tile ─────────────────────────────────────────────
-class _SwitchToRestaurantTile extends StatelessWidget {
+// ── Switch to Restaurant/Field Agent Tile ──────────────────────────────────
+class _SwitchToBusinessTile extends StatelessWidget {
   final VoidCallback onTap;
-  const _SwitchToRestaurantTile({required this.onTap});
+  final bool isFieldAgent;
+  const _SwitchToBusinessTile({required this.onTap, required this.isFieldAgent});
 
   @override
   Widget build(BuildContext context) {
+    final title = isFieldAgent ? 'Switch to Field Agent' : 'Switch to Restaurant';
+    final subtitle = isFieldAgent
+        ? 'Onboard & manage restaurant partners'
+        : 'Manage operations, staff & catalogue';
+    final icon = isFieldAgent ? Icons.badge_outlined : Icons.storefront_outlined;
+    final colors = isFieldAgent
+        ? const [Color(0xFF7C3AED), Color(0xFF6D28D9)]
+        : const [AppColors.primary, AppColors.primaryDark];
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -301,15 +316,15 @@ class _SwitchToRestaurantTile extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppColors.primary, AppColors.primaryDark],
+                gradient: LinearGradient(
+                  colors: colors,
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(
-                Icons.storefront_outlined,
+              child: Icon(
+                icon,
                 color: Colors.white,
                 size: 20,
               ),
@@ -320,7 +335,7 @@ class _SwitchToRestaurantTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Switch to Restaurant',
+                    title,
                     style: GoogleFonts.outfit(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -329,7 +344,7 @@ class _SwitchToRestaurantTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Manage operations, staff & catalogue',
+                    subtitle,
                     style: GoogleFonts.outfit(
                       fontSize: 11,
                       color: AppColors.textSecondary,
