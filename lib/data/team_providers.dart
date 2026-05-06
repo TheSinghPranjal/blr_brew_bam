@@ -4,6 +4,7 @@
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../domain/team_models.dart';
+import 'team_repository.dart';
 
 // ── Team Categories ───────────────────────────────────────────────────────
 class TeamCategoryNotifier extends Notifier<List<TeamCategory>> {
@@ -76,3 +77,6 @@ final teamMemberProvider =
     NotifierProvider<TeamMemberNotifier, List<TeamMember>>(
   TeamMemberNotifier.new,
 );
+
+// ── Team Repository (API) ────────────────────────────────────────────────
+final teamRepositoryProvider = Provider<TeamRepository>((_) => TeamRepository());
