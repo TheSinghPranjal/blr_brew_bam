@@ -308,6 +308,7 @@ class _TeamTab extends ConsumerWidget {
       builder: (ctx) => _AddMemberSheet(
         restaurantId: restaurantId,
         categories: categories,
+        ref: ref,
         onAdd: (member) {
           ref.read(teamMemberProvider.notifier).add(member);
           Navigator.of(ctx).pop();
@@ -507,10 +508,12 @@ class _AddMemberSheet extends StatefulWidget {
   final String restaurantId;
   final List<TeamCategory> categories;
   final ValueChanged<TeamMember> onAdd;
+  final WidgetRef ref;
   const _AddMemberSheet({
     required this.restaurantId,
     required this.categories,
     required this.onAdd,
+    required this.ref,
   });
 
   @override
@@ -522,6 +525,7 @@ class _AddMemberSheetState extends State<_AddMemberSheet> {
   final _formKey = GlobalKey<FormState>();
   TeamCategory? _selectedCategory;
   bool _submitted = false;
+  bool _loading = false;
 
   @override
   void initState() {
@@ -641,10 +645,16 @@ class _AddMemberSheetState extends State<_AddMemberSheet> {
               width: double.infinity,
               height: 50,
               child: ElevatedButton.icon(
-                onPressed: _submit,
-                icon: const Icon(Icons.send_rounded, size: 18),
+                onPressed: _loading ? null : _submit,
+                icon: _loading
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.send_rounded, size: 18),
                 label: Text(
-                  'Send Invite',
+                  _loading ? 'Sending…' : 'Send Invite',
                   style: GoogleFonts.outfit(
                       fontWeight: FontWeight.w700, fontSize: 15),
                 ),
@@ -656,16 +666,64 @@ class _AddMemberSheetState extends State<_AddMemberSheet> {
     );
   }
 
-  void _submit() {
+  String _roleSlugFromCategory(TeamCategory category) {
+    var s = category.name.trim().toLowerCase();
+    s = s.replaceAll(RegExp(r'\s+'), '_');
+    if (s.endsWith('s') && s.length > 1) s = s.substring(0, s.length - 1);
+    return s;
+  }
+
+  Future<void> _submit() async {
     setState(() => _submitted = true);
     if (!_formKey.currentState!.validate()) return;
     if (_selectedCategory == null) return;
 
-    widget.onAdd(createTeamMember(
-      email: _emailCtrl.text,
-      restaurantId: widget.restaurantId,
-      category: _selectedCategory!,
-    ));
+    setState(() => _loading = true);
+
+    try {
+      final user = widget.ref.read(currentUserProvider);
+      final superAdminId = user?.employeeId ?? '';
+      final superAdminName = user?.name ?? '';
+
+      final message = await widget.ref
+          .read(teamRepositoryProvider)
+          .sendInviteToAddMembersForARestaurant(
+            email: _emailCtrl.text,
+            role: _roleSlugFromCategory(_selectedCategory!),
+            restaurantId: widget.restaurantId,
+            superAdminId: superAdminId,
+            superAdminName: superAdminName,
+          );
+
+      widget.onAdd(createTeamMember(
+        email: _emailCtrl.text,
+        restaurantId: widget.restaurantId,
+        category: _selectedCategory!,
+      ));
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message, style: GoogleFonts.outfit(color: Colors.white)),
+          backgroundColor: AppColors.success,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString(), style: GoogleFonts.outfit(color: Colors.white)),
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
+      return;
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 }
 
