@@ -80,3 +80,15 @@ final teamMemberProvider =
 
 // ── Team Repository (API) ────────────────────────────────────────────────
 final teamRepositoryProvider = Provider<TeamRepository>((_) => TeamRepository());
+
+// ── Remote Team Members (API) ──────────────────────────────────────────────
+final fetchRestaurantMembersProvider =
+    FutureProvider.family<List<RestaurantMember>, String>((ref, restaurantId) async {
+  final repo = ref.read(teamRepositoryProvider);
+  final raw = await repo.fetchMembersFromMyRestaurant(restaurantId: restaurantId);
+  final users = (raw['users'] as List<dynamic>? ?? const []);
+  return users
+      .whereType<Map<String, dynamic>>()
+      .map(RestaurantMember.fromJson)
+      .toList();
+});
