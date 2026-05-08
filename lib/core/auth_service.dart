@@ -20,8 +20,9 @@ class AuthTokenClaims {
   final List<String> groups;
 
   const AuthTokenClaims({required this.scalars, required this.groups});
-  
 
+
+  
   factory AuthTokenClaims.empty() =>
       const AuthTokenClaims(scalars: {}, groups: []);
 
