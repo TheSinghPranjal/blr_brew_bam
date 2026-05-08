@@ -23,6 +23,7 @@ class AuthTokenClaims {
 
 
 
+  
 
   factory AuthTokenClaims.empty() =>
       const AuthTokenClaims(scalars: {}, groups: []);
