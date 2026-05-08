@@ -21,10 +21,6 @@ class AuthTokenClaims {
 
   const AuthTokenClaims({required this.scalars, required this.groups});
 
-
-
-  
-
   factory AuthTokenClaims.empty() =>
       const AuthTokenClaims(scalars: {}, groups: []);
 
