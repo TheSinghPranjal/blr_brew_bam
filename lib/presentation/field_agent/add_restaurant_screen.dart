@@ -222,7 +222,7 @@ class _AddRestaurantScreenState extends ConsumerState<AddRestaurantScreen> {
 
 
 
-            // ── Section: Basic Info ────────────────────────────────────
+            // ── Section: Basic Info ───────────────────────────────────
             _SectionHeader(
               icon: Icons.storefront_outlined,
               title: 'Basic Information',
