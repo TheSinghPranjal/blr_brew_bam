@@ -186,6 +186,7 @@ class _AddRestaurantScreenState extends ConsumerState<AddRestaurantScreen> {
     final agentState = ref.watch(fieldAgentProvider);
     final isLoading = agentState.status == AddRestaurantStatus.loading;
 
+
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
