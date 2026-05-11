@@ -220,6 +220,7 @@ class _AddRestaurantScreenState extends ConsumerState<AddRestaurantScreen> {
               const SizedBox(height: 16),
             ],
 
+
             // ── Section: Basic Info ────────────────────────────────────
             _SectionHeader(
               icon: Icons.storefront_outlined,
