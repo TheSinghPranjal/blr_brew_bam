@@ -253,6 +253,7 @@ class _AddRestaurantScreenState extends ConsumerState<AddRestaurantScreen> {
               },
             ),
             const SizedBox(height: 16),
+            
 
             // Type
             _FieldLabel(label: 'Restaurant Type', required: true),
