@@ -265,7 +265,7 @@ class _AddRestaurantScreenState extends ConsumerState<AddRestaurantScreen> {
                   : (t) => setState(() => _selectedType = t),
             ),
             const SizedBox(height: 24),
-            
+
 
             // ── Section: Location ─────────────────────────────────────
             _SectionHeader(
