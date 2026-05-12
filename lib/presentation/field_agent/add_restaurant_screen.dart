@@ -230,6 +230,7 @@ class _AddRestaurantScreenState extends ConsumerState<AddRestaurantScreen> {
             ),
             const SizedBox(height: 12),
 
+
             // Restaurant Name
             _FieldLabel(label: 'Restaurant Name', required: true),
             const SizedBox(height: 6),
