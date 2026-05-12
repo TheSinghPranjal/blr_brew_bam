@@ -274,7 +274,7 @@ class _AddRestaurantScreenState extends ConsumerState<AddRestaurantScreen> {
               subtitle: 'Where is this restaurant located?',
             ),
             const SizedBox(height: 12),
-            
+
 
             // City
             _FieldLabel(label: 'City', required: true),
