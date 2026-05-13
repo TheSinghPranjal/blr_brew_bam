@@ -188,6 +188,7 @@ class FieldAgentDashboard extends ConsumerWidget {
         ),
       ),
 
+      
       // ── FAB ──────────────────────────────────────────────────────────
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push('/field-agent/add-restaurant'),
