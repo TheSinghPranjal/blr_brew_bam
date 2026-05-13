@@ -10,6 +10,7 @@
 //   - WebDomain   : us-west-1gphwmlalk.auth.us-west-1.amazoncognito.com
 // ─────────────────────────────────────────────────────────────────────────────
 
+
 const amplifyconfig = '''{
     "UserAgent": "aws-amplify-cli/2.0",
     "Version": "1.0",
