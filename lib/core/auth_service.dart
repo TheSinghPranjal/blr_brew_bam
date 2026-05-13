@@ -19,6 +19,7 @@ class AuthTokenClaims {
   final Map<String, String> scalars;
   final List<String> groups;
 
+
   const AuthTokenClaims({required this.scalars, required this.groups});
 
   factory AuthTokenClaims.empty() =>
