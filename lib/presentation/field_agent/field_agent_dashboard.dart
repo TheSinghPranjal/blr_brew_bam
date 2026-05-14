@@ -215,6 +215,7 @@ class _DashboardHeader extends StatelessWidget {
   final String name;
   final int totalRestaurants;
   final bool isLoading;
+
   const _DashboardHeader({
     required this.name,
     required this.totalRestaurants,
