@@ -64,6 +64,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
       }
 
 
+
       // 2. Decode ID token — get email, name, AND cognito:groups
       final claims = await service.fetchTokenClaims();
       _log.info('Claims received → $claims');
