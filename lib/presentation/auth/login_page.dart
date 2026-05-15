@@ -83,6 +83,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
         (u) => u.email.toLowerCase() == email.toLowerCase(),
       ).firstOrNull;
 
+
       final resolved = RestaurantUser(
         employeeId: cognitoUser?.userId ?? email,
         name:       knownEmployee?.name ?? name,
