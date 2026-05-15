@@ -17,6 +17,7 @@ class CategoryRepository {
       throw Exception('fetchCategories failed ${response.statusCode}: ${response.body}');
     }
 
+
     final List<dynamic> data = jsonDecode(response.body);
     return data
         .map((e) => ApiCategory.fromJson(e as Map<String, dynamic>))
