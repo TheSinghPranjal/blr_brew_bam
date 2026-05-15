@@ -11,6 +11,7 @@ class ApiCategory {
   final int displayOrder;
   final bool isActive;
 
+
   const ApiCategory({
     required this.categoryId,
     required this.categoryName,
