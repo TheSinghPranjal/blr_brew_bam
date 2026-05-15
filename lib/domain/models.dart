@@ -17,6 +17,7 @@ enum UserRole {
   fieldAgent,
 }
 
+
 extension UserRoleX on UserRole {
   String get displayName {
     switch (this) {
