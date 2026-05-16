@@ -212,7 +212,7 @@ class FieldAgentDashboard extends ConsumerWidget {
 
 
 
-// ── Gradient Header ────────────────────────────────────────────────────────
+// ── Gradient Header ──────────────────────────────────────────────────────
 class _DashboardHeader extends StatelessWidget {
   final String name;
   final int totalRestaurants;
