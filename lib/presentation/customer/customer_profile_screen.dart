@@ -342,6 +342,7 @@ class _SwitchToBusinessTile extends StatelessWidget {
                       color: const Color(0xFF1A1A1A),
                     ),
                   ),
+
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
