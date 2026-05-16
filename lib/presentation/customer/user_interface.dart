@@ -496,6 +496,7 @@ class _ProductBody extends StatelessWidget {
       ingredients: 'Fenugreek Leaves (100%)',
       image: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=400&q=70',
     ),
+
     MockProduct(
       productId: 'PRD004',
       name: 'Green Kiwi',
