@@ -276,6 +276,7 @@ class _AddRestaurantScreenState extends ConsumerState<AddRestaurantScreen> {
             const SizedBox(height: 12),
 
 
+
             // City
             _FieldLabel(label: 'City', required: true),
             const SizedBox(height: 6),
