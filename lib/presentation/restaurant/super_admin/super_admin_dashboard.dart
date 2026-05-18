@@ -252,25 +252,45 @@ class _TeamTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final members = ref.watch(teamMemberProvider);
+    final remoteMembersAsync = ref.watch(fetchRestaurantMembersProvider(restaurantId));
+    final optimisticMembers = ref.watch(teamMemberProvider);
     final categories = ref.watch(teamCategoryProvider);
 
     return Scaffold(
       backgroundColor: AppColors.surface,
-      body: members.isEmpty
-          ? _TeamEmptyState(
+      body: remoteMembersAsync.when(
+        loading: () {
+          if (optimisticMembers.isEmpty) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          return _TeamMemberList(
+            restaurantId: restaurantId,
+            remoteMembers: const [],
+            optimisticMembers: optimisticMembers,
+            onRemoveOptimistic: (id) =>
+                ref.read(teamMemberProvider.notifier).remove(id),
+          );
+        },
+        error: (e, _) => _TeamErrorState(
+          message: e.toString(),
+          onRetry: () => ref.invalidate(fetchRestaurantMembersProvider(restaurantId)),
+        ),
+        data: (remoteMembers) {
+          final hasAny = remoteMembers.isNotEmpty || optimisticMembers.isNotEmpty;
+          if (!hasAny) {
+            return _TeamEmptyState(
               onAdd: () => _showAddMemberSheet(context, ref, categories),
-            )
-          : ListView.separated(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-              itemCount: members.length,
-              separatorBuilder: (ctx, i) => const SizedBox(height: 10),
-              itemBuilder: (ctx, i) => _TeamMemberCard(
-                member: members[i],
-                onRemove: () =>
-                    ref.read(teamMemberProvider.notifier).remove(members[i].id),
-              ),
-            ),
+            );
+          }
+          return _TeamMemberList(
+            restaurantId: restaurantId,
+            remoteMembers: remoteMembers,
+            optimisticMembers: optimisticMembers,
+            onRemoveOptimistic: (id) =>
+                ref.read(teamMemberProvider.notifier).remove(id),
+          );
+        },
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: categories.isEmpty
             ? null
@@ -503,6 +523,284 @@ class _TeamMemberCard extends StatelessWidget {
   }
 }
 
+class _TeamMemberList extends StatelessWidget {
+  final String restaurantId;
+  final List<RestaurantMember> remoteMembers;
+  final List<TeamMember> optimisticMembers;
+  final ValueChanged<String> onRemoveOptimistic;
+
+  const _TeamMemberList({
+    required this.restaurantId,
+    required this.remoteMembers,
+    required this.optimisticMembers,
+    required this.onRemoveOptimistic,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final remoteEmails = remoteMembers.map((m) => m.email.trim().toLowerCase()).toSet();
+    final optimisticUnique = optimisticMembers
+        .where((m) => !remoteEmails.contains(m.email.trim().toLowerCase()))
+        .toList();
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+      children: [
+        if (remoteMembers.isNotEmpty) ...[
+          Text(
+            'Members',
+            style: GoogleFonts.outfit(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 10),
+          ...remoteMembers.map((m) => Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: _RestaurantMemberCard(member: m),
+              )),
+        ],
+        if (optimisticUnique.isNotEmpty) ...[
+          const SizedBox(height: 6),
+          Text(
+            'Pending (local)',
+            style: GoogleFonts.outfit(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 10),
+          ...optimisticUnique.map((m) => Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: _TeamMemberCard(
+                  member: m,
+                  onRemove: () => onRemoveOptimistic(m.id),
+                ),
+              )),
+        ],
+      ],
+    );
+  }
+}
+
+class _RestaurantMemberCard extends StatelessWidget {
+  final RestaurantMember member;
+  const _RestaurantMemberCard({required this.member});
+
+  Color _statusColor(String status) {
+    final s = status.trim().toLowerCase();
+    if (s == 'active') return AppColors.success;
+    if (s == 'invited') return AppColors.warning;
+    if (s == 'pending') return AppColors.warning;
+    if (s == 'disabled' || s == 'inactive') return AppColors.error;
+    return AppColors.textSecondary;
+  }
+
+  String _prettyRole(String role) {
+    final s = role.trim().replaceAll('_', ' ');
+    if (s.isEmpty) return '—';
+    return s.split(' ').map((w) {
+      if (w.isEmpty) return w;
+      return w[0].toUpperCase() + w.substring(1);
+    }).join(' ');
+  }
+
+  String _prettyStatus(String status) {
+    final s = status.trim().toLowerCase();
+    if (s.isEmpty) return 'Unknown';
+    return s[0].toUpperCase() + s.substring(1);
+  }
+
+  String _formatDate(DateTime dt) {
+    if (dt.millisecondsSinceEpoch == 0) return '—';
+    return '${dt.day.toString().padLeft(2, '0')}/'
+        '${dt.month.toString().padLeft(2, '0')}/'
+        '${dt.year}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final statusColor = _statusColor(member.status);
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(
+                  Icons.person_outline_rounded,
+                  color: statusColor,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      member.email,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.outfit(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      _prettyRole(member.role),
+                      style: GoogleFonts.outfit(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: statusColor.withValues(alpha: 0.25)),
+                ),
+                child: Text(
+                  _prettyStatus(member.status),
+                  style: GoogleFonts.outfit(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: statusColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          const Divider(height: 1),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              const Icon(Icons.calendar_today_rounded,
+                  size: 13, color: AppColors.textSecondary),
+              const SizedBox(width: 6),
+              Text(
+                'Created: ${_formatDate(member.createdAt)}',
+                style: GoogleFonts.outfit(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+          if ((member.addedByName ?? '').trim().isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                const Icon(Icons.admin_panel_settings_outlined,
+                    size: 14, color: AppColors.textSecondary),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    'Added by: ${member.addedByName}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.outfit(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _TeamErrorState extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
+  const _TeamErrorState({required this.message, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 76,
+              height: 76,
+              decoration: BoxDecoration(
+                color: AppColors.error.withValues(alpha: 0.08),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.cloud_off_rounded,
+                  size: 36, color: AppColors.error),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              'Could not load members',
+              style: GoogleFonts.outfit(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.outfit(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh_rounded, size: 18),
+              label: const Text('Retry'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 // ── Add Member Bottom Sheet ────────────────────────────────────────────────
 class _AddMemberSheet extends StatefulWidget {
   final String restaurantId;
@@ -700,6 +998,8 @@ class _AddMemberSheetState extends State<_AddMemberSheet> {
         restaurantId: widget.restaurantId,
         category: _selectedCategory!,
       ));
+
+      widget.ref.invalidate(fetchRestaurantMembersProvider(widget.restaurantId));
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
