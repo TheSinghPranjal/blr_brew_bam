@@ -308,6 +308,7 @@ class _AddRestaurantScreenState extends ConsumerState<AddRestaurantScreen> {
                 prefixIcon: Icon(Icons.near_me_outlined),
               ),
 
+
               validator: (v) {
                 if (v == null || v.trim().isEmpty) {
                   return 'Area / Locality is required';
