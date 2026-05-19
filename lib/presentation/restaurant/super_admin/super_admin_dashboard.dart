@@ -719,6 +719,7 @@ class _RestaurantMemberCard extends StatelessWidget {
           ),
 
 
+
           if ((member.addedByName ?? '').trim().isNotEmpty) ...[
             const SizedBox(height: 6),
             Row(
