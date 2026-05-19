@@ -31,6 +31,7 @@ class AuthTokenClaims {
   String? get sub      => scalars['sub'];
   String? get picture  => scalars['picture'];
 
+
   String get displayName =>
       scalars['name'] ??
       scalars['given_name'] ??
