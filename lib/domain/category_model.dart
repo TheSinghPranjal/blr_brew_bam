@@ -12,6 +12,7 @@ class ApiCategory {
   final bool isActive;
 
 
+
   const ApiCategory({
     required this.categoryId,
     required this.categoryName,
