@@ -14,6 +14,7 @@ class ApiCategory {
 
 
 
+
   const ApiCategory({
     required this.categoryId,
     required this.categoryName,
