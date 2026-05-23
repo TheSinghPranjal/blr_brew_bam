@@ -45,6 +45,7 @@ class AppTheme {
         labelLarge: GoogleFonts.outfit(
             fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white),
       ),
+
       cardTheme: CardThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(
