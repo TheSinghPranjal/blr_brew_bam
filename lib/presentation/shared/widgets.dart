@@ -30,6 +30,8 @@ class RoleChip extends StatelessWidget {
   }
 }
 
+
+
 // ── Section Header ─────────────────────────────────────────────────────
 class SectionHeader extends StatelessWidget {
   final String title;
