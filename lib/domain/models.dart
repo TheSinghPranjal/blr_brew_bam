@@ -154,6 +154,7 @@ class Product {
   final double price;
   final String imageUrl;
 
+
   Product({
     required this.id,
     required this.name,
