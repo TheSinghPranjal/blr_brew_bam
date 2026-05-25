@@ -356,6 +356,7 @@ class _SwitchToBusinessTile extends StatelessWidget {
                 ],
               ),
             ),
+
             const Icon(
               Icons.chevron_right_rounded,
               color: Color(0xFFAAAAAA),
