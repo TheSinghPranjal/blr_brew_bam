@@ -343,6 +343,8 @@ class _SwitchToBusinessTile extends StatelessWidget {
                     ),
                   ),
 
+
+
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
