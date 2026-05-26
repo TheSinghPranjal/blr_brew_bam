@@ -22,6 +22,8 @@ class AppLogger {
 
 
 
+
+
   void warn(String msg) {
     if (kDebugMode) debugPrint('[$tag] ⚠️  $msg');
   }
