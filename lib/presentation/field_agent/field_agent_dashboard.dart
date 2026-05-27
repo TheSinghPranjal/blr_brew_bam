@@ -224,9 +224,6 @@ class _DashboardHeader extends StatelessWidget {
     required this.isLoading,
   });
 
-
-
-
   @override
   Widget build(BuildContext context) {
     return Container(
