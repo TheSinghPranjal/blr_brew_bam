@@ -5,12 +5,25 @@ import 'category_repository.dart';
 import 'mock_data.dart';
 import '../core/auth_service.dart';
 import '../core/app_logger.dart';
+import '../core/auth_user_resolver.dart';
+import 'user_repository.dart';
 
 const _log = AppLogger('Providers');
 
 // ── Amplify auth service singleton ─────────────────────────────────────
 final amplifyAuthServiceProvider = Provider<AmplifyAuthService>(
   (_) => AmplifyAuthService(),
+);
+
+final userRepositoryProvider = Provider<UserRepository>(
+  (_) => UserRepository(),
+);
+
+final authUserResolverProvider = Provider<AuthUserResolver>(
+  (ref) => AuthUserResolver(
+    ref.read(amplifyAuthServiceProvider),
+    ref.read(userRepositoryProvider),
+  ),
 );
 
 // ── Auth Init: restores session on cold start ──────────────────────────
@@ -26,34 +39,8 @@ final authInitProvider = FutureProvider<void>((ref) async {
     return;
   }
 
-  // Decode ID token: email, display name, AND cognito:groups (role)
-  final claims = await service.fetchTokenClaims();
-  _log.info('Session restored — claims: $claims');
-
-  final email = claims.email ?? '';
-  final name  = claims.displayName;
-  final role  = claims.highestPriorityRole;
-  _log.info('Restored role from JWT groups: ${role.name}');
-
-  // Enrich with mock data for known employees (remove when real API exists)
-  final knownEmployee = mockUsers.where(
-    (u) => u.email.toLowerCase() == email.toLowerCase(),
-  ).firstOrNull;
-
-  final resolved = RestaurantUser(
-    employeeId: cognitoUser.userId,
-    name:       knownEmployee?.name ?? name,
-    username:   email.split('@').first,
-    mobileNumber: knownEmployee?.mobileNumber ?? '',
-    email:      email,
-    designation: role.displayName,
-    role:       role,          // ← authoritative from Cognito group
-    photoUrl:   claims.picture ?? knownEmployee?.photoUrl ?? '',
-    age:        knownEmployee?.age ?? 0,
-    languagesSpoken: knownEmployee?.languagesSpoken ?? [],
-    metadata:   {'cognito_groups': claims.groups.join(','), 'restored': 'true'},
-  );
-
+  final resolver = ref.read(authUserResolverProvider);
+  final resolved = await resolver.resolveAfterSignIn();
   _log.info('Session resolved → ${resolved.name} | ${resolved.role.name}');
   ref.read(currentUserProvider.notifier).state = resolved;
 });
