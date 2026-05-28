@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/providers.dart';
 import '../presentation/auth/login_page.dart';
+import '../presentation/auth/profile_setup_page.dart';
 import '../presentation/auth/gateway_page.dart';
 import '../presentation/customer/user_interface.dart';
 import '../presentation/restaurant/restaurant_dashboard.dart';
@@ -31,6 +32,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/login',
         name: 'login',
         builder: (_, __) => const LoginPage(),
+      ),
+      GoRoute(
+        path: '/profile-setup',
+        name: 'profile-setup',
+        builder: (_, __) => const ProfileSetupPage(),
       ),
       GoRoute(
         path: '/gateway',
