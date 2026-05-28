@@ -8,9 +8,11 @@ enum UserRole {
   headChef,
   chef,
   kitchen,
+  bartender,
   seniorWaiter,
   waiter,
   serviceDesk,
+  cashier,
   cleaning,
   inventory,
   customer,
@@ -28,6 +30,10 @@ extension UserRoleX on UserRole {
         return 'Senior Waiter';
       case UserRole.serviceDesk:
         return 'Service Desk';
+      case UserRole.bartender:
+        return 'Bartender';
+      case UserRole.cashier:
+        return 'Cashier';
       case UserRole.fieldAgent:
         return 'Field Agent';
       default:
@@ -45,6 +51,26 @@ extension UserRoleX on UserRole {
 
   /// Whether this role can access Field Agent UI
   bool get isFieldAgent => this == UserRole.fieldAgent;
+
+  /// Staff roles that are not plain customer
+  bool get isStaffRole =>
+      this != UserRole.customer && this != UserRole.fieldAgent;
+}
+
+/// Extensions on [RestaurantUser] for workspace routing
+extension RestaurantUserX on RestaurantUser {
+  /// True when user belongs to a restaurant as staff (cook, waiter, etc.)
+  bool get isRestaurantStaff {
+    final rid = metadata['restaurant_id']?.toString() ?? 'none';
+    if (rid == 'none' || rid.isEmpty) return false;
+    if (metadata['is_restaurant_staff'] == true) return true;
+    return role.isStaffRole;
+  }
+
+  String get restaurantId => metadata['restaurant_id']?.toString() ?? 'none';
+
+  String get staffRoleSlug =>
+      metadata['staff_role']?.toString() ?? metadata['db_role']?.toString() ?? role.name;
 }
 
 // -------------------------------------------------------
