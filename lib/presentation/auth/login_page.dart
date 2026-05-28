@@ -6,7 +6,6 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/app_logger.dart';
 import '../../core/theme.dart';
-import '../../data/mock_data.dart';
 import '../../data/providers.dart';
 import '../../domain/models.dart';
 
@@ -63,46 +62,17 @@ class _LoginPageState extends ConsumerState<LoginPage>
         return;
       }
 
-
-
-
-      // 2. Decode ID token — get email, name, AND cognito:groups
-      final claims = await service.fetchTokenClaims();
-      _log.info('Claims received → $claims');
-
-      final email = claims.email ?? '';
-      final name  = claims.displayName;
-      // Role is authoritative from Cognito group membership
-      final role  = claims.highestPriorityRole;
-      _log.info('Resolved role from JWT groups: ${role.name}');
-
-      // 3. Enrich with mock data if the email matches a known employee
-      //    (backfills phone, age, languages — remove once you have a real API)
-      final cognitoUser = await service.getCurrentUser();
-      final knownEmployee = mockUsers.where(
-        (u) => u.email.toLowerCase() == email.toLowerCase(),
-      ).firstOrNull;
-
-
-      final resolved = RestaurantUser(
-        employeeId: cognitoUser?.userId ?? email,
-        name:       knownEmployee?.name ?? name,
-        username:   email.split('@').first,
-        mobileNumber: knownEmployee?.mobileNumber ?? '',
-        email:      email,
-        designation: role.displayName,
-        role:       role,          // ← always from Cognito group
-        photoUrl:   claims.picture ?? knownEmployee?.photoUrl ?? '',
-        age:        knownEmployee?.age ?? 0,
-        languagesSpoken: knownEmployee?.languagesSpoken ?? [],
-        metadata:   {'cognito_groups': claims.groups.join(',')},
-      );
-
-      _log.info('RestaurantUser resolved → ${resolved.name} | ${resolved.role.name}');
+      final resolver = ref.read(authUserResolverProvider);
+      final resolved = await resolver.resolveAfterSignIn();
+      _log.info('RestaurantUser resolved → ${resolved.name} | ${resolved.role.name} '
+          '| groups=${resolved.metadata['cognito_groups']} '
+          '| restaurant=${resolved.metadata['restaurant_id']}');
       ref.read(currentUserProvider.notifier).state = resolved;
 
       if (!mounted) return;
-      context.go('/gateway');
+
+      final profileComplete = resolved.metadata['profile_complete'] == true;
+      context.go(profileComplete ? '/gateway' : '/profile-setup');
     } catch (e, st) {
       _log.error('_signInWithGoogle failed', e, st);
       setState(() {
