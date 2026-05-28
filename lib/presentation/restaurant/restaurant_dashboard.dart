@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 import '../../data/providers.dart';
 import '../../domain/models.dart';
 import '../shared/widgets.dart';
+import '../restaurant/bartender/bartender_dashboard.dart';
+import '../restaurant/cook/cook_dashboard.dart';
+import '../restaurant/waiter/waiter_dashboard.dart';
 import '../restaurant/super_admin/super_admin_dashboard.dart';
 import '../restaurant/manager/manager_dashboard.dart';
 
@@ -30,25 +33,22 @@ class RestaurantDashboard extends ConsumerWidget {
     return switch (user.role) {
       UserRole.superAdmin => const SuperAdminDashboard(),
       UserRole.manager    => const ManagerDashboard(),
-      UserRole.headChef   => PlaceholderRoleScreen(
-          role: 'Head Chef Interface', onLogout: logout),
-      UserRole.chef       => PlaceholderRoleScreen(
-          role: 'Chef Interface', onLogout: logout),
-      UserRole.kitchen    => PlaceholderRoleScreen(
-          role: 'Kitchen Interface', onLogout: logout),
-      UserRole.seniorWaiter => PlaceholderRoleScreen(
-          role: 'Senior Waiter Interface', onLogout: logout),
-      UserRole.waiter     => PlaceholderRoleScreen(
-          role: 'Waiter Interface', onLogout: logout),
+      UserRole.headChef   => const CookDashboard(),
+      UserRole.chef       => const CookDashboard(),
+      UserRole.kitchen    => const CookDashboard(),
+      UserRole.bartender  => const BartenderDashboard(),
+      UserRole.seniorWaiter => const WaiterDashboard(),
+      UserRole.waiter     => const WaiterDashboard(),
       UserRole.serviceDesk => PlaceholderRoleScreen(
           role: 'Service Desk Interface', onLogout: logout),
+      UserRole.cashier    => PlaceholderRoleScreen(
+          role: 'Cashier Interface', onLogout: logout),
       UserRole.cleaning   => PlaceholderRoleScreen(
           role: 'Cleaning Interface', onLogout: logout),
       UserRole.inventory  => PlaceholderRoleScreen(
           role: 'Inventory Interface', onLogout: logout),
       UserRole.customer   => PlaceholderRoleScreen(
           role: 'Customer', onLogout: logout),
-      // TODO: Handle this case.
       UserRole.fieldAgent => throw UnimplementedError(),
     };
   }

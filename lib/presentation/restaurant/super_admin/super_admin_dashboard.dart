@@ -175,8 +175,18 @@ class _SuperAdminDashboardState extends ConsumerState<SuperAdminDashboard>
         children: [
           CircleAvatar(
             radius: 18,
-            backgroundImage: NetworkImage(user.photoUrl),
+            backgroundImage: user.photoUrl.isNotEmpty &&
+                    (user.photoUrl.startsWith('http://') ||
+                        user.photoUrl.startsWith('https://'))
+                ? NetworkImage(user.photoUrl)
+                : null,
             backgroundColor: AppColors.gradientStart,
+            child: user.photoUrl.isEmpty
+                ? Text(
+                    user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.w700),
+                  )
+                : null,
           ),
           Positioned(
             right: -2,
