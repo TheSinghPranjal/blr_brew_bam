@@ -171,12 +171,17 @@ class UserAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasUrl = url.isNotEmpty &&
+        (url.startsWith('http://') || url.startsWith('https://'));
+
     return CircleAvatar(
       radius: radius,
       backgroundColor: AppColors.gradientStart,
-      backgroundImage: NetworkImage(url),
-      onBackgroundImageError: (_, __) {},
-      child: null,
+      backgroundImage: hasUrl ? NetworkImage(url) : null,
+      onBackgroundImageError: hasUrl ? (_, __) {} : null,
+      child: hasUrl
+          ? null
+          : Icon(Icons.person, size: radius, color: AppColors.primary),
     );
   }
 }
