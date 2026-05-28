@@ -31,6 +31,10 @@ class AuthTokenClaims {
   String? get sub      => scalars['sub'];
   String? get picture  => scalars['picture'];
 
+  /// Cognito pool username (e.g. Google_1234567890) — required for AdminAddUserToGroup.
+  String? get cognitoUsername =>
+      scalars['cognito:username'] ?? scalars['username'];
+
 
   String get displayName =>
       scalars['name'] ??
@@ -48,11 +52,16 @@ class AuthTokenClaims {
     'manager':       UserRole.manager,
     'head_chef':     UserRole.headChef,
     'chef':          UserRole.chef,
+    'cook':          UserRole.chef,
     'kitchen':       UserRole.kitchen,
+    'bartender':     UserRole.bartender,
+    'staff':         UserRole.kitchen,
+    'cashier':       UserRole.cashier,
     'senior_waiter': UserRole.seniorWaiter,
     'waiter':        UserRole.waiter,
     'service_desk':  UserRole.serviceDesk,
     'cleaning':      UserRole.cleaning,
+    'cleaner':       UserRole.cleaning,
     'inventory':     UserRole.inventory,
     'field_agent':   UserRole.fieldAgent,
     'customer':      UserRole.customer,
@@ -65,9 +74,11 @@ class AuthTokenClaims {
     UserRole.headChef,
     UserRole.chef,
     UserRole.kitchen,
+    UserRole.bartender,
     UserRole.seniorWaiter,
     UserRole.waiter,
     UserRole.serviceDesk,
+    UserRole.cashier,
     UserRole.fieldAgent,
     UserRole.cleaning,
     UserRole.inventory,
@@ -214,10 +225,10 @@ class AmplifyAuthService {
   /// a [List<String>] so [AuthTokenClaims.highestPriorityRole] can work.
   ///
   /// Requires only `openid` + `email` scopes — no extra API call.
-  Future<AuthTokenClaims> fetchTokenClaims() async {
+  Future<AuthTokenClaims> fetchTokenClaims({bool forceRefresh = false}) async {
     try {
       final session = await Amplify.Auth.fetchAuthSession(
-        options: const FetchAuthSessionOptions(forceRefresh: false),
+        options: FetchAuthSessionOptions(forceRefresh: forceRefresh),
       ) as CognitoAuthSession;
 
       final rawIdToken =
