@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme.dart';
 import '../../data/providers.dart';
@@ -18,7 +19,10 @@ class _UserInterfaceState extends ConsumerState<UserInterface> {
   String _selectedSubTab = '';
   int _navIndex = 0;
 
+  static const _restaurantTab = 'Restaurant';
+
   static const _mainTabIcons = {
+    'Restaurant': Icons.storefront_rounded,
     'Food': Icons.restaurant_menu_rounded,
     'Instamart': Icons.shopping_basket_rounded,
     'Dineout': Icons.dinner_dining_rounded,
@@ -42,10 +46,13 @@ class _UserInterfaceState extends ConsumerState<UserInterface> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    final List<String> mainTabs = List<String>.from(
-      user.metadata['accessibleTabs'] ??
-          ['Food', 'Instamart', 'Dineout', 'Giftables', 'Scenes'],
-    );
+    final List<String> mainTabs = [
+      if (user.isRestaurantStaff) _restaurantTab,
+      ...List<String>.from(
+        user.metadata['accessibleTabs'] ??
+            ['Food', 'Instamart', 'Dineout', 'Giftables', 'Scenes'],
+      ),
+    ];
     final List<String> subTabs = List<String>.from(
       user.metadata['accessibleSubTabs'] ??
           ['All', 'Fresh', 'Price-Lock', 'Summer', 'Electronics'],
@@ -85,10 +92,12 @@ class _UserInterfaceState extends ConsumerState<UserInterface> {
             ),
             const SizedBox(height: 4),
             Expanded(
-              child: _ProductBody(
-                mainTab: _selectedMainTab,
-                subTab: _selectedSubTab,
-              ),
+              child: _selectedMainTab == _restaurantTab
+                  ? _RestaurantWorkspacePanel(user: user)
+                  : _ProductBody(
+                      mainTab: _selectedMainTab,
+                      subTab: _selectedSubTab,
+                    ),
             ),
           ],
         ),
@@ -112,6 +121,92 @@ class _UserInterfaceState extends ConsumerState<UserInterface> {
 
   void _openProfile() {
     Navigator.of(context).push(customerProfileRoute());
+  }
+}
+
+// ── Restaurant workspace entry (staff only) ───────────────────────────────
+class _RestaurantWorkspacePanel extends StatelessWidget {
+  final RestaurantUser user;
+  const _RestaurantWorkspacePanel({required this.user});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Your restaurant workspace',
+            style: GoogleFonts.outfit(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: const Color(0xFF0F5A57),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'You are signed in as ${user.role.displayName}. '
+            'Open the restaurant app to manage orders and operations.',
+            style: GoogleFonts.outfit(
+              fontSize: 14,
+              color: AppColors.textSecondary,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Material(
+            color: AppColors.primary,
+            borderRadius: BorderRadius.circular(20),
+            child: InkWell(
+              onTap: () => context.go('/restaurant'),
+              borderRadius: BorderRadius.circular(20),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Icon(Icons.storefront_rounded,
+                          color: Colors.white, size: 32),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Open ${user.role.displayName}',
+                            style: GoogleFonts.outfit(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                            ),
+                          ),
+                          Text(
+                            'Restaurant ID: ${user.restaurantId}',
+                            style: GoogleFonts.outfit(
+                              fontSize: 12,
+                              color: Colors.white.withValues(alpha: 0.85),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.arrow_forward_ios_rounded,
+                        color: Colors.white, size: 18),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
