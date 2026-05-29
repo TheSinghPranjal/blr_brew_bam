@@ -55,7 +55,22 @@ class ManagerDashboard extends ConsumerWidget {
                 children: [
                   CircleAvatar(
                     radius: 24,
-                    backgroundImage: NetworkImage(user.photoUrl),
+                    backgroundImage: user.photoUrl.isNotEmpty &&
+                            (user.photoUrl.startsWith('http://') ||
+                                user.photoUrl.startsWith('https://'))
+                        ? NetworkImage(user.photoUrl)
+                        : null,
+                    child: user.photoUrl.isEmpty
+                        ? Text(
+                            user.name.isNotEmpty
+                                ? user.name[0].toUpperCase()
+                                : 'U',
+                            style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          )
+                        : null,
                   ),
                   const SizedBox(width: 14),
                   Column(
