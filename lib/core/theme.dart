@@ -43,6 +43,7 @@ class AppTheme {
             fontSize: 15, color: AppColors.textSecondary),
         bodyMedium: GoogleFonts.outfit(
             fontSize: 13, color: AppColors.textSecondary),
+
         labelLarge: GoogleFonts.outfit(
             fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white),
       ),
