@@ -40,6 +40,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (_, __) => const ProfileSetupPage(),
       ),
 
+      
       GoRoute(
         path: '/gateway',
         name: 'gateway',
