@@ -42,6 +42,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
 
 
+
       GoRoute(
         path: '/gateway',
         name: 'gateway',
