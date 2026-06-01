@@ -27,6 +27,7 @@ class AppTheme {
         primary: AppColors.primary,
       ),
       scaffoldBackgroundColor: AppColors.surface,
+
       textTheme: GoogleFonts.outfitTextTheme().copyWith(
         displayLarge: GoogleFonts.outfit(
             fontSize: 32, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
