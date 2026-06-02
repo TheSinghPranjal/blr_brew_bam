@@ -61,6 +61,7 @@ class AppTheme {
         color: AppColors.cardBg,
         clipBehavior: Clip.antiAlias,
       ),
+
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: Colors.white,
