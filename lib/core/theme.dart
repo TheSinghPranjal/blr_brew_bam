@@ -62,6 +62,7 @@ class AppTheme {
         clipBehavior: Clip.antiAlias,
       ),
 
+
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: Colors.white,
