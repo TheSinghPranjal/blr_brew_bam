@@ -112,6 +112,7 @@ class AppTheme {
           textStyle: GoogleFonts.outfit(fontWeight: FontWeight.w600, fontSize: 16),
         ),
       ),
+
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.transparent,
