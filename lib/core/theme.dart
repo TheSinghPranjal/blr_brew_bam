@@ -91,6 +91,7 @@ class AppTheme {
         hintStyle: GoogleFonts.outfit(color: const Color(0xFF94A3B8)),
         labelStyle: GoogleFonts.outfit(color: AppColors.textSecondary),
       ),
+
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           elevation: 0,
